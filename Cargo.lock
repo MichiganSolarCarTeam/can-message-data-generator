@@ -286,7 +286,7 @@ dependencies = [
 
 [[package]]
 name = "simulated-signal-data"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "pyo3",
  "rand",

@@ -1,6 +1,8 @@
 use std::str::FromStr;
 
 use pyo3::prelude::*;
+use rand::seq::SliceRandom;
+use rand::Rng;
 use serde::de::{self, Deserializer, MapAccess, SeqAccess, Visitor};
 use serde::ser::{SerializeStruct, Serializer};
 use serde::{Deserialize, Serialize};
@@ -152,6 +154,14 @@ impl SignalGenerator {
         SignalGenerator { inner }
     }
 
+    pub fn calculate(&self, time: f32) -> i64 {
+        self.inner.calculate(time)
+    }
+
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).unwrap()
+    }
+
     #[staticmethod]
     pub fn default_constant_signal(num_bits: u8, is_signed: bool, scale: f32, offset: f32) -> Self {
         SignalGenerator::new(
@@ -168,12 +178,65 @@ impl SignalGenerator {
         )
     }
 
-    pub fn calculate(&self, time: f32) -> i64 {
-        self.inner.calculate(time)
-    }
+    /// Generate a random signal with the given parameters
+    #[staticmethod]
+    #[pyo3(
+        signature=(
+            num_bits,
+            is_signed,
+            scale,
+            offset,
+            /,
+            *,
+            minimum = get_min_limit(),
+            maximum = get_max_limit()
+        )
+    )]
+    pub fn random_signal(
+        num_bits: u8,
+        is_signed: bool,
+        scale: f32,
+        offset: f32,
+        minimum: f32,
+        maximum: f32,
+    ) -> Self {
+        let (minimum, maximum) = {
+            if minimum == get_min_limit() && maximum == get_max_limit() {
+                calculate_minimum_and_maximum(is_signed, num_bits, scale, offset)
+            } else if minimum == get_min_limit() {
+                (
+                    calculate_minimum_and_maximum(is_signed, num_bits, scale, offset).0,
+                    maximum,
+                )
+            } else if maximum == get_max_limit() {
+                (
+                    minimum,
+                    calculate_minimum_and_maximum(is_signed, num_bits, scale, offset).1,
+                )
+            } else {
+                (minimum, maximum)
+            }
+        };
 
-    pub fn to_json(&self) -> String {
-        serde_json::to_string(self).unwrap()
+        // Randomly choose a signal type
+        let mut rng = rand::thread_rng();
+        let signal_type = SignalType::get_types().choose(&mut rng).unwrap().clone();
+        let amplitude = rng.gen_range(0.0..100.0);
+        let period = rng.gen_range(0.0..10.0);
+        let phase = rng.gen_range(0.0..period);
+
+        SignalGenerator::new(
+            signal_type,
+            minimum,
+            maximum,
+            amplitude,
+            period,
+            phase,
+            num_bits,
+            is_signed,
+            scale,
+            offset,
+        )
     }
 
     /// Turns a JSON string into a SignalGenerator
