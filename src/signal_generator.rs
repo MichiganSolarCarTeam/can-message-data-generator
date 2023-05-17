@@ -153,7 +153,7 @@ impl SignalGenerator {
     }
 
     #[staticmethod]
-    pub fn constant_signal() -> Self {
+    pub fn default_constant_signal(num_bits: u8, is_signed: bool, scale: f32, offset: f32) -> Self {
         SignalGenerator::new(
             SignalType::Constant,
             get_min_limit(),
@@ -161,10 +161,10 @@ impl SignalGenerator {
             0.0,
             0.0,
             0.0,
-            0,
-            false,
-            0.0,
-            0.0,
+            num_bits,
+            is_signed,
+            scale,
+            offset,
         )
     }
 
