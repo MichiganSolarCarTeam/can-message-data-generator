@@ -34,18 +34,23 @@ impl SignalType {
     }
 
     #[staticmethod]
+    fn from(string: &str) -> Self {
+        SignalType::from_str(string).unwrap()
+    }
+
+    #[staticmethod]
     fn from_string(string: &str) -> Self {
         SignalType::from_str(string).unwrap()
+    }
+
+    #[staticmethod]
+    fn get_types() -> Vec<SignalType> {
+        SignalType::iter().collect()
     }
 
     fn __repr__(&self) -> &'static str {
         self.to_string()
     }
-}
-
-#[pyfunction]
-pub fn get_signal_types() -> Vec<SignalType> {
-    SignalType::iter().collect()
 }
 
 pub mod generators {
