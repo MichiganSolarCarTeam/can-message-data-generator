@@ -58,18 +58,18 @@ fn calculate_minimum_and_maximum(
 impl SignalGenerator {
     #[new]
     #[pyo3(signature = (
-        *,
-        signal_type,
-        minimum = get_min_limit(),
-        maximum = get_max_limit(),
-        amplitude,
-        period,
-        phase,
-        num_bits,
-        is_signed,
-        scale,
-        offset
-        ))]
+    *,
+    signal_type,
+    minimum = get_min_limit(),
+    maximum = get_max_limit(),
+    amplitude,
+    period,
+    phase,
+    num_bits,
+    is_signed,
+    scale,
+    offset
+    ))]
     pub fn new(
         signal_type: SignalType,
         mut minimum: f32,
@@ -163,11 +163,30 @@ impl SignalGenerator {
     }
 
     #[staticmethod]
-    pub fn default_constant_signal(num_bits: u8, is_signed: bool, scale: f32, offset: f32) -> Self {
+    #[pyo3(
+        signature = (
+            num_bits,
+            is_signed,
+            scale,
+            offset,
+            /,
+            *,
+            minimum = get_min_limit(),
+            maximum = get_max_limit()
+        )
+    )]
+    pub fn default_constant_signal(
+        num_bits: u8,
+        is_signed: bool,
+        scale: f32,
+        offset: f32,
+        minimum: f32,
+        maximum: f32,
+    ) -> Self {
         SignalGenerator::new(
             SignalType::Constant,
-            get_min_limit(),
-            get_max_limit(),
+            minimum,
+            maximum,
             0.0,
             0.0,
             0.0,
@@ -181,7 +200,7 @@ impl SignalGenerator {
     /// Generate a random signal with the given parameters
     #[staticmethod]
     #[pyo3(
-        signature=(
+        signature = (
             num_bits,
             is_signed,
             scale,
@@ -200,24 +219,6 @@ impl SignalGenerator {
         minimum: f32,
         maximum: f32,
     ) -> Self {
-        let (minimum, maximum) = {
-            if minimum == get_min_limit() && maximum == get_max_limit() {
-                calculate_minimum_and_maximum(is_signed, num_bits, scale, offset)
-            } else if minimum == get_min_limit() {
-                (
-                    calculate_minimum_and_maximum(is_signed, num_bits, scale, offset).0,
-                    maximum,
-                )
-            } else if maximum == get_max_limit() {
-                (
-                    minimum,
-                    calculate_minimum_and_maximum(is_signed, num_bits, scale, offset).1,
-                )
-            } else {
-                (minimum, maximum)
-            }
-        };
-
         // Randomly choose a signal type
         let mut rng = rand::thread_rng();
         let signal_type = SignalType::get_types().choose(&mut rng).unwrap().clone();
