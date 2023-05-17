@@ -28,6 +28,16 @@ impl SignalType {
         }
     }
 
+    #[staticmethod]
+    fn parse(string: &str) -> Self {
+        SignalType::from_str(string).unwrap()
+    }
+
+    #[staticmethod]
+    fn from_string(string: &str) -> Self {
+        SignalType::from_str(string).unwrap()
+    }
+
     fn __repr__(&self) -> &'static str {
         self.to_string()
     }
