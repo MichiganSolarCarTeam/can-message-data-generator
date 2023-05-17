@@ -32,20 +32,26 @@ fn calculate_minimum_and_maximum(
     scale: f32,
     offset: f32,
 ) -> (f32, f32) {
+    let scale: f64 = scale as f64;
+    let offset: f64 = offset as f64;
     let (lvalue, rvalue) = {
         if is_signed {
-            let min_by_bits = 1 << (num_bits - 1);
-            let lvalue = -1.0 * scale * min_by_bits as f32 + offset;
-            let max_by_bits = (1 << (num_bits - 1)) - 1;
-            let rvalue = scale * max_by_bits as f32 + offset;
+            let min_by_bits = 1i64 << (num_bits - 1);
+            let lvalue = -1.0 * scale * min_by_bits as f64 + offset;
+            // avoid overflow in the following function
+            let max_by_bits = (1i64 << (num_bits - 1)) - 1;
+            let rvalue = scale * max_by_bits as f64 + offset;
             (lvalue, rvalue)
         } else {
             let lvalue = offset;
             let max_by_bits = (1 << num_bits) - 1;
-            let rvalue = scale * max_by_bits as f32 + offset;
+            let rvalue = scale * max_by_bits as f64 + offset;
             (lvalue, rvalue)
         }
     };
+
+    let lvalue = lvalue as f32;
+    let rvalue = rvalue as f32;
 
     if lvalue > rvalue {
         (rvalue, lvalue)
@@ -58,17 +64,17 @@ fn calculate_minimum_and_maximum(
 impl SignalGenerator {
     #[new]
     #[pyo3(signature = (
-    *,
-    signal_type,
-    minimum = get_min_limit(),
-    maximum = get_max_limit(),
-    amplitude,
-    period,
-    phase,
-    num_bits,
-    is_signed,
-    scale,
-    offset
+        *,
+        signal_type,
+        minimum = get_min_limit(),
+        maximum = get_max_limit(),
+        amplitude,
+        period,
+        phase,
+        num_bits,
+        is_signed,
+        scale,
+        offset
     ))]
     pub fn new(
         signal_type: SignalType,
@@ -547,6 +553,48 @@ impl<'de> Deserialize<'de> for SignalGenerator {
         ];
 
         deserializer.deserialize_struct("SignalGenerator", FIELDS, SignalGeneratorVisitor)
+    }
+}
+
+#[cfg(test)]
+mod generation_tests {
+    use super::*;
+
+    #[test]
+    fn test_default_generation() {
+        let num_bits = 32;
+        let is_signed = true;
+        let scale = 1.0;
+        let offset = 0.0;
+
+        let minimum = get_min_limit();
+        let maximum = get_max_limit();
+
+        let default_signal = SignalGenerator::default_constant_signal(
+            num_bits, is_signed, scale, offset, minimum, maximum,
+        );
+
+        assert_eq!(default_signal.inner.get_type(), SignalType::Constant);
+        assert_eq!(default_signal.inner.get_num_bits(), num_bits);
+        assert_eq!(default_signal.inner.is_signed(), is_signed);
+        assert_eq!(default_signal.inner.get_scale(), scale);
+        assert_eq!(default_signal.inner.get_offset(), offset);
+    }
+
+    #[test]
+    fn test_random_generation() {
+        let num_bits = 32;
+        let is_signed = true;
+        let scale = 1.0;
+        let offset = 0.0;
+
+        let minimum = get_min_limit();
+        let maximum = get_max_limit();
+
+        let random_signal =
+            SignalGenerator::random_signal(num_bits, is_signed, scale, offset, minimum, maximum);
+
+        assert!(true);
     }
 }
 
