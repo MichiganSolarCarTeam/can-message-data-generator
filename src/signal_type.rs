@@ -18,7 +18,7 @@ pub enum SignalType {
 
 #[pymethods]
 impl SignalType {
-    fn to_string(&self) -> &'static str {
+    pub fn to_string(&self) -> &'static str {
         match self {
             SignalType::Sine => "Sine",
             SignalType::Square => "Square",
@@ -29,22 +29,22 @@ impl SignalType {
     }
 
     #[staticmethod]
-    fn parse(string: &str) -> Self {
+    pub fn parse(string: &str) -> Self {
         SignalType::from_str(string).unwrap()
     }
 
     #[staticmethod]
-    fn from(string: &str) -> Self {
+    pub fn from(string: &str) -> Self {
         SignalType::from_str(string).unwrap()
     }
 
     #[staticmethod]
-    fn from_string(string: &str) -> Self {
+    pub fn from_string(string: &str) -> Self {
         SignalType::from_str(string).unwrap()
     }
 
     #[staticmethod]
-    fn get_types() -> Vec<SignalType> {
+    pub fn get_types() -> Vec<SignalType> {
         SignalType::iter().collect()
     }
 
