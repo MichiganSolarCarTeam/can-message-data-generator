@@ -15,4 +15,4 @@ maturin build -r
 wheel=$(ls -t target/wheels/*.whl | head -1)
 
 # Install the built wheel
-pip install "$wheel"
+pip install "$wheel" --force-reinstall
