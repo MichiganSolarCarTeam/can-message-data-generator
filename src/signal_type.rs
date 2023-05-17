@@ -7,7 +7,7 @@ use strum_macros::{Display, EnumIter, EnumString};
 
 /// The different signals that can be generated
 #[pyclass]
-#[derive(Copy, Clone, Display, EnumIter, EnumString, PartialEq)]
+#[derive(Copy, Clone, Display, EnumIter, EnumString, PartialEq, Debug)]
 pub enum SignalType {
     Sine,
     Square,
