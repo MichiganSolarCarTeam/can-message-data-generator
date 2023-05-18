@@ -166,7 +166,15 @@ pub mod generators {
 
             // Undo the scale and offset
             let clamped = (clamped as f32 + self.get_offset()) * self.get_scale();
-            clamped.round() as i64
+            let rounded = clamped.round() as i64;
+
+            if rounded as f32 > self.get_maximum() {
+                self.get_maximum() as i64
+            } else if self.get_minimum() > rounded as f32 {
+                self.get_minimum() as i64
+            } else {
+                rounded
+            }
         }
 
         /// Calculates the fraction to use as the noise

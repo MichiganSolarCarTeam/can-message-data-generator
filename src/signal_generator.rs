@@ -54,9 +54,9 @@ fn calculate_minimum_and_maximum(
     let rvalue = rvalue as f32;
 
     if lvalue > rvalue {
-        (rvalue, lvalue)
+        (rvalue + 2.0 * f32::EPSILON, lvalue - 2.0 * f32::EPSILON)
     } else {
-        (lvalue, rvalue)
+        (lvalue + 2.0 * f32::EPSILON, rvalue - 2.0 * f32::EPSILON)
     }
 }
 
@@ -591,10 +591,31 @@ mod generation_tests {
         let minimum = get_min_limit();
         let maximum = get_max_limit();
 
-        let random_signal =
+        let _random_signal =
             SignalGenerator::random_signal(num_bits, is_signed, scale, offset, minimum, maximum);
 
         assert!(true);
+    }
+
+    #[test]
+    fn test_more_random_generation() {
+        let num_bits = 16;
+        let is_signed = false;
+        let scale = 0.0001;
+        let offset = 0.0;
+
+        let minimum = get_min_limit();
+        let maximum = get_max_limit();
+
+        let random_signal =
+            SignalGenerator::random_signal(num_bits, is_signed, scale, offset, minimum, maximum);
+
+        let mut rng = rand::thread_rng();
+        for _i in 0..100 {
+            let value = random_signal.calculate(rng.gen_range(0.0..1000.0));
+            assert!(value as f32 / scale >= 0.0);
+            assert!(value as f32 / scale <= 65535.0);
+        }
     }
 }
 
