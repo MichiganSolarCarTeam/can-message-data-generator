@@ -17,23 +17,21 @@ pub struct SignalGenerator {
 }
 
 #[pyfunction]
-pub const fn get_max_limit() -> f32 {
-    i32::MAX as f32
+pub const fn get_max_limit() -> f64 {
+    i32::MAX as f64
 }
 
 #[pyfunction]
-pub const fn get_min_limit() -> f32 {
-    i32::MIN as f32
+pub const fn get_min_limit() -> f64 {
+    i32::MIN as f64
 }
 
 fn calculate_minimum_and_maximum(
     is_signed: bool,
     num_bits: u8,
-    scale: f32,
-    offset: f32,
-) -> (f32, f32) {
-    let scale: f64 = scale as f64;
-    let offset: f64 = offset as f64;
+    scale: f64,
+    offset: f64,
+) -> (f64, f64) {
     let (lvalue, rvalue) = {
         if is_signed {
             let min_by_bits = 1i64 << (num_bits - 1);
@@ -50,13 +48,10 @@ fn calculate_minimum_and_maximum(
         }
     };
 
-    let lvalue = lvalue as f32;
-    let rvalue = rvalue as f32;
-
     if lvalue > rvalue {
-        (rvalue + 2.0 * f32::EPSILON, lvalue - 2.0 * f32::EPSILON)
+        (rvalue, lvalue)
     } else {
-        (lvalue + 2.0 * f32::EPSILON, rvalue - 2.0 * f32::EPSILON)
+        (lvalue, rvalue)
     }
 }
 
@@ -78,15 +73,15 @@ impl SignalGenerator {
     ))]
     pub fn new(
         signal_type: SignalType,
-        mut minimum: f32,
-        mut maximum: f32,
-        amplitude: f32,
-        period: f32,
-        phase: f32,
+        mut minimum: f64,
+        mut maximum: f64,
+        amplitude: f64,
+        period: f64,
+        phase: f64,
         num_bits: u8,
         is_signed: bool,
-        scale: f32,
-        offset: f32,
+        scale: f64,
+        offset: f64,
     ) -> Self {
         if minimum > maximum {
             panic!("Minimum must be less than or equal to maximum");
@@ -160,7 +155,7 @@ impl SignalGenerator {
         SignalGenerator { inner }
     }
 
-    pub fn calculate(&self, time: f32) -> i64 {
+    pub fn calculate(&self, time: f64) -> i64 {
         self.inner.calculate(time)
     }
 
@@ -184,10 +179,10 @@ impl SignalGenerator {
     pub fn default_constant_signal(
         num_bits: u8,
         is_signed: bool,
-        scale: f32,
-        offset: f32,
-        minimum: f32,
-        maximum: f32,
+        scale: f64,
+        offset: f64,
+        minimum: f64,
+        maximum: f64,
     ) -> Self {
         SignalGenerator::new(
             SignalType::Constant,
@@ -220,10 +215,10 @@ impl SignalGenerator {
     pub fn random_signal(
         num_bits: u8,
         is_signed: bool,
-        scale: f32,
-        offset: f32,
-        minimum: f32,
-        maximum: f32,
+        scale: f64,
+        offset: f64,
+        minimum: f64,
+        maximum: f64,
     ) -> Self {
         // Randomly choose a signal type
         let mut rng = rand::thread_rng();
@@ -372,23 +367,23 @@ impl<'de> Deserialize<'de> for SignalGenerator {
                 )
                 .expect("Invalid signal type");
 
-                let minimum: f32 = seq
+                let minimum: f64 = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(1, &self))?;
 
-                let maximum: f32 = seq
+                let maximum: f64 = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(2, &self))?;
 
-                let amplitude: f32 = seq
+                let amplitude: f64 = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(3, &self))?;
 
-                let period: f32 = seq
+                let period: f64 = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(4, &self))?;
 
-                let phase: f32 = seq
+                let phase: f64 = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(5, &self))?;
 
@@ -400,11 +395,11 @@ impl<'de> Deserialize<'de> for SignalGenerator {
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(7, &self))?;
 
-                let scale: f32 = seq
+                let scale: f64 = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(8, &self))?;
 
-                let offset: f32 = seq
+                let offset: f64 = seq
                     .next_element()?
                     .ok_or_else(|| de::Error::invalid_length(9, &self))?;
 
@@ -427,15 +422,15 @@ impl<'de> Deserialize<'de> for SignalGenerator {
                 V: MapAccess<'de>,
             {
                 let mut signal_type: Option<SignalType> = None;
-                let mut minimum: Option<f32> = None;
-                let mut maximum: Option<f32> = None;
-                let mut amplitude: Option<f32> = None;
-                let mut period: Option<f32> = None;
-                let mut phase: Option<f32> = None;
+                let mut minimum: Option<f64> = None;
+                let mut maximum: Option<f64> = None;
+                let mut amplitude: Option<f64> = None;
+                let mut period: Option<f64> = None;
+                let mut phase: Option<f64> = None;
                 let mut num_bits: Option<u8> = None;
                 let mut is_signed: Option<bool> = None;
-                let mut scale: Option<f32> = None;
-                let mut offset: Option<f32> = None;
+                let mut scale: Option<f64> = None;
+                let mut offset: Option<f64> = None;
 
                 // Deserialize the fields in any order
                 while let Some(key) = map.next_key()? {
@@ -613,15 +608,15 @@ mod generation_tests {
         let mut rng = rand::thread_rng();
         for _i in 0..100 {
             let value = random_signal.calculate(rng.gen_range(0.0..1000.0));
-            assert!(value as f32 / scale >= 0.0);
-            assert!(value as f32 / scale <= 65535.0);
+            assert!(value as f64 / scale >= 0.0);
+            assert!(value as f64 / scale <= 65535.0);
         }
     }
 }
 
 #[cfg(test)]
 mod serialization_tests {
-    use std::f32::consts::PI;
+    use std::f64::consts::PI;
 
     use super::{SignalGenerator, SignalType};
     use rand::prelude::*;
@@ -640,13 +635,13 @@ mod serialization_tests {
                     {
                         let min = super::get_min_limit();
                         let max = super::get_max_limit();
-                        let amp = rng.gen::<f32>();
-                        let period = rng.gen::<f32>();
-                        let phase = rng.gen::<f32>();
+                        let amp = rng.gen::<f64>();
+                        let period = rng.gen::<f64>();
+                        let phase = rng.gen::<f64>();
                         let num_bits: u8 = rng.gen_range(1u8..16u8);
                         let is_signed = rng.gen::<bool>();
-                        let scale: f32 = rng.gen_range(-1.0f32..10.0f32);
-                        let offset: f32 = rng.gen_range(-100.0f32..100.0f32);
+                        let scale: f64 = rng.gen_range(-1.0f64..10.0f64);
+                        let offset: f64 = rng.gen_range(-100.0f64..100.0f64);
 
                         // minimum, maximum based on signed or unsigned and number of bits and offset and scale
                         let (calculated_min, calculated_max) = super::calculate_minimum_and_maximum(
@@ -676,23 +671,23 @@ mod serialization_tests {
                                 Token::String("type"),
                                 Token::BorrowedStr(stringify!($name)),
                                 Token::String("minimum"),
-                                Token::F32(calculated_min),
+                                Token::F64(calculated_min),
                                 Token::String("maximum"),
-                                Token::F32(calculated_max),
+                                Token::F64(calculated_max),
                                 Token::String("amplitude"),
-                                Token::F32(amp),
+                                Token::F64(amp),
                                 Token::String("period"),
-                                Token::F32(period),
+                                Token::F64(period),
                                 Token::String("phase"),
-                                Token::F32(phase),
+                                Token::F64(phase),
                                 Token::String("num_bits"),
                                 Token::U8(num_bits),
                                 Token::String("is_signed"),
                                 Token::Bool(is_signed),
                                 Token::String("scale"),
-                                Token::F32(scale),
+                                Token::F64(scale),
                                 Token::String("offset"),
-                                Token::F32(offset),
+                                Token::F64(offset),
                                 Token::StructEnd,
                             ],
                         )
@@ -704,15 +699,15 @@ mod serialization_tests {
 
     #[test]
     fn serialize_sin_demo() {
-        let amp: f32 = 12.0;
-        let min: f32 = 0.0;
-        let max: f32 = 101.0;
-        let period: f32 = PI;
-        let phase: f32 = 0.0;
+        let amp: f64 = 12.0;
+        let min: f64 = 0.0;
+        let max: f64 = 101.0;
+        let period: f64 = PI;
+        let phase: f64 = 0.0;
         let num_bits: u8 = 16;
         let is_signed: bool = true;
-        let scale: f32 = 1.0;
-        let offset: f32 = 0.0;
+        let scale: f64 = 1.0;
+        let offset: f64 = 0.0;
 
         let signal = SignalGenerator::new(
             SignalType::Sine,
@@ -736,23 +731,23 @@ mod serialization_tests {
                 Token::String("type"),
                 Token::BorrowedStr("Sine"),
                 Token::String("minimum"),
-                Token::F32(min),
+                Token::F64(min),
                 Token::String("maximum"),
-                Token::F32(max),
+                Token::F64(max),
                 Token::String("amplitude"),
-                Token::F32(amp),
+                Token::F64(amp),
                 Token::String("period"),
-                Token::F32(period),
+                Token::F64(period),
                 Token::String("phase"),
-                Token::F32(phase),
+                Token::F64(phase),
                 Token::String("num_bits"),
                 Token::U8(num_bits),
                 Token::String("is_signed"),
                 Token::Bool(is_signed),
                 Token::String("scale"),
-                Token::F32(scale),
+                Token::F64(scale),
                 Token::String("offset"),
-                Token::F32(offset),
+                Token::F64(offset),
                 Token::StructEnd,
             ],
         )

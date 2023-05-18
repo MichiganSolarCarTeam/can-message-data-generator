@@ -58,23 +58,23 @@ pub mod generators {
 
     use core::fmt::Debug;
     use rand::Rng;
-    use std::f32::consts::PI;
+    use std::f64::consts::PI;
 
-    /// A macro to create structs for each SignalType with the fields: amplitude, frequency, phase (all f32)
+    /// A macro to create structs for each SignalType with the fields: amplitude, frequency, phase (all f64)
     macro_rules! signal_type_struct {
         ($($name:ident),*) => {
             $(
                 #[derive(Debug)]
                 pub struct $name {
-                    pub minimum: f32,
-                    pub maximum: f32,
-                    pub amplitude: f32,
-                    pub period: f32,
-                    pub phase: f32,
+                    pub minimum: f64,
+                    pub maximum: f64,
+                    pub amplitude: f64,
+                    pub period: f64,
+                    pub phase: f64,
                     pub num_bits: u8,
                     pub is_signed: bool,
-                    pub scale: f32,
-                    pub offset: f32
+                    pub scale: f64,
+                    pub offset: f64
                 }
             )*
         };
@@ -85,19 +85,19 @@ pub mod generators {
             fn get_type(&self) -> SignalType {
                 SignalType::$name
             }
-            fn get_minimum(&self) -> f32 {
+            fn get_minimum(&self) -> f64 {
                 self.minimum
             }
-            fn get_maximum(&self) -> f32 {
+            fn get_maximum(&self) -> f64 {
                 self.maximum
             }
-            fn get_amplitude(&self) -> f32 {
+            fn get_amplitude(&self) -> f64 {
                 self.amplitude
             }
-            fn get_period(&self) -> f32 {
+            fn get_period(&self) -> f64 {
                 self.period
             }
-            fn get_phase(&self) -> f32 {
+            fn get_phase(&self) -> f64 {
                 self.phase
             }
             fn get_num_bits(&self) -> u8 {
@@ -106,10 +106,10 @@ pub mod generators {
             fn is_signed(&self) -> bool {
                 self.is_signed
             }
-            fn get_scale(&self) -> f32 {
+            fn get_scale(&self) -> f64 {
                 self.scale
             }
-            fn get_offset(&self) -> f32 {
+            fn get_offset(&self) -> f64 {
                 self.offset
             }
         };
@@ -120,15 +120,15 @@ pub mod generators {
 
     pub trait Signal: Send {
         fn get_type(&self) -> SignalType;
-        fn get_minimum(&self) -> f32;
-        fn get_maximum(&self) -> f32;
-        fn get_amplitude(&self) -> f32;
-        fn get_period(&self) -> f32;
-        fn get_phase(&self) -> f32;
+        fn get_minimum(&self) -> f64;
+        fn get_maximum(&self) -> f64;
+        fn get_amplitude(&self) -> f64;
+        fn get_period(&self) -> f64;
+        fn get_phase(&self) -> f64;
         fn get_num_bits(&self) -> u8;
         fn is_signed(&self) -> bool;
-        fn get_scale(&self) -> f32;
-        fn get_offset(&self) -> f32;
+        fn get_scale(&self) -> f64;
+        fn get_offset(&self) -> f64;
 
         fn get_type_name(&self) -> &'static str {
             self.get_type().to_string()
@@ -139,7 +139,7 @@ pub mod generators {
         ///
         /// Note: the number has to remain within the range of the signal's
         /// minimum and maximum values
-        fn shrink_to_fit(&self, value: f32) -> i64 {
+        fn shrink_to_fit(&self, value: f64) -> i64 {
             // Apply the reverse of the scale and offset
             let clamped = value.max(self.get_minimum()).min(self.get_maximum());
             let scaled = clamped / self.get_scale();
@@ -165,12 +165,12 @@ pub mod generators {
             let clamped = offset.max(min_value).min(max_value);
 
             // Undo the scale and offset
-            let clamped = (clamped as f32 + self.get_offset()) * self.get_scale();
+            let clamped = (clamped as f64 + self.get_offset()) * self.get_scale();
             let rounded = clamped.round() as i64;
 
-            if rounded as f32 > self.get_maximum() {
+            if rounded as f64 > self.get_maximum() {
                 self.get_maximum() as i64
-            } else if self.get_minimum() > rounded as f32 {
+            } else if self.get_minimum() > rounded as f64 {
                 self.get_minimum() as i64
             } else {
                 rounded
@@ -178,14 +178,14 @@ pub mod generators {
         }
 
         /// Calculates the fraction to use as the noise
-        fn noise(&self) -> f32 {
-            static NOISE: f32 = 0.1;
+        fn noise(&self) -> f64 {
+            static NOISE: f64 = 0.1;
             let mut rng = rand::thread_rng();
             rng.gen_range(-NOISE..NOISE)
         }
 
         /// Calculate the value of the signal at a given time with noise
-        fn calculate(&self, time: f32) -> i64;
+        fn calculate(&self, time: f64) -> i64;
     }
 
     impl Debug for dyn Signal {
@@ -208,7 +208,7 @@ pub mod generators {
     impl Signal for Sine {
         signal_type_getters!(Sine);
 
-        fn calculate(&self, time: f32) -> i64 {
+        fn calculate(&self, time: f64) -> i64 {
             let a = self.get_amplitude();
             let b = 2.0 * PI / self.get_period();
             let c = self.get_phase();
@@ -222,7 +222,7 @@ pub mod generators {
     impl Signal for Square {
         signal_type_getters!(Square);
 
-        fn calculate(&self, time: f32) -> i64 {
+        fn calculate(&self, time: f64) -> i64 {
             let value = {
                 if (time + self.phase) % self.period < self.period / 2.0 {
                     self.amplitude
@@ -239,7 +239,7 @@ pub mod generators {
     impl Signal for Triangle {
         signal_type_getters!(Triangle);
 
-        fn calculate(&self, time: f32) -> i64 {
+        fn calculate(&self, time: f64) -> i64 {
             let t = (time + self.phase) % self.period;
             let value = {
                 if t < 0.25 {
@@ -259,7 +259,7 @@ pub mod generators {
     impl Signal for Sawtooth {
         signal_type_getters!(Sawtooth);
 
-        fn calculate(&self, time: f32) -> i64 {
+        fn calculate(&self, time: f64) -> i64 {
             let t = (time + self.phase) % self.period;
             let value = self.amplitude * (t * 2.0 - 1.0);
             let value = value + self.noise() * self.amplitude;
@@ -271,7 +271,7 @@ pub mod generators {
     impl Signal for Constant {
         signal_type_getters!(Constant);
 
-        fn calculate(&self, _time: f32) -> i64 {
+        fn calculate(&self, _time: f64) -> i64 {
             let value = self.amplitude;
             let value = value + self.noise() * self.amplitude;
             let value = value.clamp(self.minimum, self.maximum);
