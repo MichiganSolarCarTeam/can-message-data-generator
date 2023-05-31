@@ -240,7 +240,7 @@ pub mod generators {
         signal_type_getters!(Triangle);
 
         fn calculate(&self, time: f64) -> i64 {
-            let t = (time + self.phase) % self.period;
+            let t = (time + self.phase) % self.period / self.period;
             let value = {
                 if t < 0.25 {
                     self.amplitude * t * 4.0
@@ -260,7 +260,7 @@ pub mod generators {
         signal_type_getters!(Sawtooth);
 
         fn calculate(&self, time: f64) -> i64 {
-            let t = (time + self.phase) % self.period;
+            let t: f64 = (time + self.phase) % self.period / self.period;
             let value = self.amplitude * (t * 2.0 - 1.0);
             let value = value + self.noise() * self.amplitude;
             let value = value.clamp(self.minimum, self.maximum);
