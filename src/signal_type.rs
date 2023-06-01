@@ -142,7 +142,13 @@ pub mod generators {
         fn shrink_to_fit(&self, value: f64) -> i64 {
             // Apply the reverse of the scale and offset
             let clamped = value.max(self.get_minimum()).min(self.get_maximum());
-            let scaled = clamped / self.get_scale();
+            let scaled = clamped / {
+                if self.get_scale() < 1.0 {
+                    self.get_scale()
+                } else {
+                    1.0
+                }
+            };
             let offset = scaled - self.get_offset();
             let offset = offset.round() as i64;
 
@@ -277,5 +283,43 @@ pub mod generators {
             let value = value.clamp(self.minimum, self.maximum);
             self.shrink_to_fit(value)
         }
+    }
+}
+
+#[cfg(test)]
+mod signal_test {
+    use crate::{
+        signal_generator::{get_max_limit, get_min_limit},
+        signal_type::generators::Signal,
+    };
+
+    #[test]
+    fn sine_test() {
+        use super::*;
+
+        let signal_type = SignalType::Constant;
+        let minimum = get_min_limit();
+        let maximum = get_max_limit();
+        let amplitude = 8200.0;
+        let period = 100.0;
+        let phase = 0.0;
+        let num_bits: u8 = 16;
+        let is_signed = true;
+        let scale = 100.0;
+        let offset = 0.0;
+
+        let signal = generators::Constant {
+            minimum,
+            maximum,
+            amplitude,
+            period,
+            phase,
+            num_bits,
+            is_signed,
+            scale,
+            offset,
+        };
+
+        dbg!(signal.calculate(0.0));
     }
 }
