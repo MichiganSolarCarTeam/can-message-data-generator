@@ -1,6 +1,6 @@
 [package]
 name = "simulated-signal-data"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -9,13 +9,13 @@ name = "simulated_signal_data"
 crate-type = ["cdylib"]
 
 [dependencies]
-serde =  {version = "1.0.163", features = ["derive"] }
+serde = { version = "1.0.163", features = ["derive"] }
 serde_json = "1.0.66"
 strum = "0.24"
 strum_macros = "0.24"
 
 # dev dependencies
-serde_test  = "1.0.163"
+serde_test = "1.0.163"
 rand = "0.8.5"
 
 [dependencies.pyo3]

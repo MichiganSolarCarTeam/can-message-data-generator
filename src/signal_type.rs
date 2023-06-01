@@ -186,7 +186,7 @@ pub mod generators {
 
         /// Calculates the fraction to use as the noise
         fn noise(&self) -> f64 {
-            static NOISE: f64 = 0.1;
+            static NOISE: f64 = 0.01;
             let mut rng = rand::thread_rng();
             rng.gen_range(-NOISE..NOISE)
         }
