@@ -142,13 +142,14 @@ pub mod generators {
         fn shrink_to_fit(&self, value: f64) -> i64 {
             // Apply the reverse of the scale and offset
             let clamped = value.max(self.get_minimum()).min(self.get_maximum());
-            let scaled = clamped / {
+            let scale_factor = {
                 if self.get_scale() < 1.0 {
                     self.get_scale()
                 } else {
                     1.0
                 }
             };
+            let scaled = clamped / scale_factor;
             let offset = scaled - self.get_offset();
             let offset = offset.round() as i64;
 
@@ -171,7 +172,7 @@ pub mod generators {
             let clamped = offset.max(min_value).min(max_value);
 
             // Undo the scale and offset
-            let clamped = (clamped as f64 + self.get_offset()) * self.get_scale();
+            let clamped = (clamped as f64 + self.get_offset()) * scale_factor;
             let rounded = clamped.round() as i64;
 
             if rounded as f64 > self.get_maximum() {
