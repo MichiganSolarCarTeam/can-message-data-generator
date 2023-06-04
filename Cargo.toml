@@ -1,11 +1,11 @@
 [package]
-name = "simulated-signal-data"
-version = "0.5.1"
+name = "can-message-data-generator"
+version = "0.7.3"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "simulated_signal_data"
+name = "can_message_data_generator"
 crate-type = ["cdylib"]
 
 [dependencies]
