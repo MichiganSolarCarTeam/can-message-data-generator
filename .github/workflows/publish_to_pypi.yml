@@ -96,8 +96,6 @@ jobs:
           python-version: 3.7
           architecture: x64
       
-      - uses: dtolnay/rust-toolchain@stable
-
       - name: Build Wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -129,6 +127,13 @@ jobs:
         with:
           python-version: 3.7
       
+      - name: Build Wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: auto
+          args: --release --out dist
+      
       - uses: uraimo/run-on-arch-action@v2.5.0
         if: matrix.target != 'ppc64'
         name: Install Built Wheel
@@ -143,6 +148,7 @@ jobs:
           run: |
             pip3 install simulated_signal_data --no-index --find-links dist --force-reinstall
             python3 -c "import simulated_signal_data"
+
       - name: Upload Wheels
         uses: actions/upload-artifact@v3
         with:
@@ -176,7 +182,6 @@ jobs:
       uses: addnab/docker-run-action@v3
       with:
         image: alpine:latest
-        options: -v ${{ github.workspace }}:/io -w /io
         run: |
           apk add py3-pip
           pip3 install -U pip
@@ -205,7 +210,7 @@ jobs:
       with:
         python-version: 3.7
 
-    - name: Build wheels
+    - name: Build Wheels
       uses: PyO3/maturin-action@v1
       with:
         target: ${{ matrix.platform.target }}
@@ -213,7 +218,7 @@ jobs:
         args: --release --out dist
 
     - uses: uraimo/run-on-arch-action@v2.5.0
-      name: Install built wheel
+      name: Install Built Wheel
       with:
         arch: ${{ matrix.platform.arch }}
         distro: alpine_latest
@@ -225,7 +230,7 @@ jobs:
           pip3 install simulated_signal_data --no-index --find-links dist --force-reinstall
           python3 -c "import simulated_signal_data"
 
-    - name: Upload wheels
+    - name: Upload Wheels
       uses: actions/upload-artifact@v3
       with:
         name: wheels
