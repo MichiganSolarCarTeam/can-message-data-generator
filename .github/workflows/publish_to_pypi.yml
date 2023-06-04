@@ -29,8 +29,8 @@ jobs:
 
       - name: Install Built Wheel - x86_64
         run: |
-          pip install simulated_signal_data --no-index --find-links dist --force-reinstall
-          python -c "import simulated_signal_data"
+          pip install can_message_data_generator --no-index --find-links dist --force-reinstall
+          python -c "import can_message_data_generator"
 
       - name: Build Wheels - universal2
         uses: PyO3/maturin-action@v1
@@ -40,8 +40,8 @@ jobs:
 
       - name: Install Built Wheel - universal2
         run: |
-          pip install simulated_signal_data --no-index --find-links dist --force-reinstall
-          python -c "import simulated_signal_data"
+          pip install can_message_data_generator --no-index --find-links dist --force-reinstall
+          python -c "import can_message_data_generator"
 
       # Uploads to server to publish at the end
       - name: Upload Wheels
@@ -73,8 +73,8 @@ jobs:
 
       - name: Install Built Wheel
         run: |
-          python -m pip install simulated_signal_data --no-index --find-links dist --force-reinstall
-          python -c "import simulated_signal_data"
+          python -m pip install can_message_data_generator --no-index --find-links dist --force-reinstall
+          python -c "import can_message_data_generator"
       
       # Uploads to server to publish at the end
       - name: Upload Wheels
@@ -105,8 +105,8 @@ jobs:
       - name: Install Built Wheel
         if: matrix.target == 'x86_64'
         run: |
-          python -m pip install simulated_signal_data --no-index --find-links dist --force-reinstall
-          python -c "import simulated_signal_data"
+          python -m pip install can_message_data_generator --no-index --find-links dist --force-reinstall
+          python -c "import can_message_data_generator"
       
       # Uploads to server to publish at the end
       - name: Upload Wheels
@@ -146,8 +146,8 @@ jobs:
             apt-get install -y --no-install-recommends python3 python3-pip
             pip3 install -U pip
           run: |
-            pip3 install simulated_signal_data --no-index --find-links dist --force-reinstall
-            python3 -c "import simulated_signal_data"
+            pip3 install can_message_data_generator --no-index --find-links dist --force-reinstall
+            python3 -c "import can_message_data_generator"
 
       - name: Upload Wheels
         uses: actions/upload-artifact@v3
@@ -185,8 +185,8 @@ jobs:
         run: |
           apk add py3-pip
           pip3 install -U pip
-          pip3 install simulated_signal_data --no-index --find-links dist --force-reinstall
-          python3 -c "import simulated_signal_data"
+          pip3 install can_message_data_generator --no-index --find-links dist --force-reinstall
+          python3 -c "import can_message_data_generator"
 
     - name: Upload Wheels
       uses: actions/upload-artifact@v3
@@ -227,8 +227,8 @@ jobs:
           apk add py3-pip
           pip3 install -U pip
         run: |
-          pip3 install simulated_signal_data --no-index --find-links dist --force-reinstall
-          python3 -c "import simulated_signal_data"
+          pip3 install can_message_data_generator --no-index --find-links dist --force-reinstall
+          python3 -c "import can_message_data_generator"
 
     - name: Upload Wheels
       uses: actions/upload-artifact@v3
